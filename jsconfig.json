@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",              // Root of your project
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["*"],              // '@/' maps to root-level files/folders
+      "@lib/*": ["lib/*"]        // '@lib/' maps to 'lib/' folder
     }
-  }
+  },
+  "exclude": ["node_modules"]
 }

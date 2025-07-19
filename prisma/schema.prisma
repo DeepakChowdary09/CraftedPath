@@ -1,0 +1,113 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  clerkUserId     String   @unique // Clerk user ID
+  email           String   @unique
+  name            String?
+  imageUrl        String?
+  industry        String? // combined industry-subindustries
+
+  industryInsights IndustryInsights? @relation(fields: [industry], references: [industry])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // profile section
+  bio             String?
+  experience      Int?
+  skills          String[] // Array of skills
+
+  assessments     Assessments[]
+  resume          Resume?
+  coverLetter     CoverLetter[]
+}
+
+model Assessments {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  quizScore      Float
+  category       String   // Technical or Behavioral
+  improvementTip String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Resume {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  content    String   @db.Text
+  atsScore   Float?
+  Feedback   String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CoverLetter {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  content        String
+  jobDescription String?
+  companyName    String
+  jobTitle       String
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId]) // ✅ Correct way to declare index
+}
+
+model IndustryInsights {
+  id               String   @id @default(uuid())
+  industry         String   @unique
+
+  // Relations
+  users            User[]
+
+  // Salary data
+  salaryRanges     Json[]  // Array of {role: String, minSalary: Float, maxSalary: Float}
+
+  // Industry Trends
+  growthRate       Float
+  demandLevel      DemandLevel
+  topSkills        String[]
+
+  // Market conditions
+  marketOutlook    MarketOutlook
+  keyTrends        String[]
+
+  // Learning suggestions
+  recommendedSkills String[]
+
+  lastUpdated      DateTime @default(now())
+  nextUpdate       DateTime
+
+  @@index([industry])
+}
+
+enum DemandLevel {
+  High
+  Medium
+  Low
+}
+
+enum MarketOutlook {
+  Positive
+  Neutral
+  Negative
+}
