@@ -1,9 +1,5 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -12,25 +8,21 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(uuid())
-  clerkUserId     String   @unique // Clerk user ID
-  email           String   @unique
-  name            String?
-  imageUrl        String?
-  industry        String? // combined industry-subindustries
-
+  id               String            @id @default(uuid())
+  clerkUserId      String            @unique
+  email            String            @unique
+  name             String?
+  imageUrl         String?
+  industry         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  bio              String?
+  experience       Int?
+  skills           String[]
+  assessments      Assessments[]
+  coverLetter      CoverLetter[]
+  resume           Resume?
   industryInsights IndustryInsights? @relation(fields: [industry], references: [industry])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // profile section
-  bio             String?
-  experience      Int?
-  skills          String[] // Array of skills
-
-  assessments     Assessments[]
-  resume          Resume?
-  coverLetter     CoverLetter[]
 }
 
 model Assessments {
@@ -38,64 +30,54 @@ model Assessments {
   userId         String
   user           User     @relation(fields: [userId], references: [id])
   quizScore      Float
-  category       String   // Technical or Behavioral
+  questions      Json // JSON array of question objects
+  category       String // Technical, Behavioral
   improvementTip String?
-
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  @@index([userId])
+  
 }
 
-model Resume {
-  id         String   @id @default(uuid())
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id])
-  content    String   @db.Text
-  atsScore   Float?
-  Feedback   String?
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Resume {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  content   String
+  atsScore  Float?
+  Feedback  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model CoverLetter {
   id             String   @id @default(uuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
   content        String
   jobDescription String?
   companyName    String
   jobTitle       String
-
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
 
-  @@index([userId]) // ✅ Correct way to declare index
+  @@index([userId])
 }
 
 model IndustryInsights {
-  id               String   @id @default(uuid())
-  industry         String   @unique
-
-  // Relations
-  users            User[]
-
-  // Salary data
-  salaryRanges     Json[]  // Array of {role: String, minSalary: Float, maxSalary: Float}
-
-  // Industry Trends
-  growthRate       Float
-  demandLevel      DemandLevel
-  topSkills        String[]
-
-  // Market conditions
-  marketOutlook    MarketOutlook
-  keyTrends        String[]
-
-  // Learning suggestions
+  id                String        @id @default(uuid())
+  industry          String        @unique
+  salaryRanges      Json[]
+  growthRate        Float
+  demandLevel       DemandLevel
+  topSkills         String[]
+  marketOutlook     MarketOutlook
+  keyTrends         String[]
   recommendedSkills String[]
-
-  lastUpdated      DateTime @default(now())
-  nextUpdate       DateTime
+  lastUpdated       DateTime      @default(now())
+  nextUpdate        DateTime
+  users             User[]
 
   @@index([industry])
 }
