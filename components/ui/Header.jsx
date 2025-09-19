@@ -1,5 +1,3 @@
-
-
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import {
   ChevronDown,
@@ -12,6 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./button";
+import { ThemeToggle } from "./theme-toggle";
 
 import {
   DropdownMenu,
@@ -39,13 +38,13 @@ const GrowthToolsDropdown = () => (
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <Link href="/ai-cvletter" className="flex items-center gap-2">
+        <Link href="/ai-cover-letter" className="flex items-center gap-2">
           <PenBox className="h-4 w-4 mr-2" />
           <span>Cover Letter</span>
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem>
-        <Link href="/interview-prep" className="flex items-center gap-2">
+        <Link href="/interview" className="flex items-center gap-2">
           <GraduationCap className="h-4 w-4 mr-2" />
           <span>Interview Preparation</span>
         </Link>
@@ -91,6 +90,7 @@ const Header = async () => {
               }}
               afterSignOutUrl="/"
             />
+            <ThemeToggle />
           </SignedIn>
 
           <SignedOut>

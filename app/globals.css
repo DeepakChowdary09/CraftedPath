@@ -176,4 +176,13 @@
   transform: rotateX(0deg) scale(1) translateY(40px);
 }
 
+.pdf-container {
+  all: initial;
+  font-family: sans-serif;
+  color: black;
+  background: white;
+}
 
+.pdf-container * {
+  all: revert;
+}

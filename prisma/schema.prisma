@@ -28,17 +28,16 @@ model User {
 model Assessments {
   id             String   @id @default(uuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
   quizScore      Float
-  questions      Json // JSON array of question objects
-  category       String // Technical, Behavioral
+  category       String
   improvementTip String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  @@index([userId])
-  
-}
+  questions      Json
+  user           User     @relation(fields: [userId], references: [id])
 
+  @@index([userId])
+}
 
 model Resume {
   id        String   @id @default(uuid())
