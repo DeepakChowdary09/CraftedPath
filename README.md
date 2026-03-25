@@ -15,7 +15,7 @@ Stay updated with role-specific trends, in-demand skills, and hiring patterns.
 📄 Resume Creation & Tailoring
 Generate and customize resumes that fit each job description.
 
-💌 Cover Letter Generation
+// Cover Letter Generation
 AI-powered, professional cover letters tailored to the company & role.
 
 🎤 Interview Preparation
