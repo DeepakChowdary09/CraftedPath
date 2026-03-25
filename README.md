@@ -1,4 +1,4 @@
-🌟 CraftedPath | Your AI-Powered Career Companion 🚀
+ CraftedPath | Your AI-Powered Career Companion 🚀
 
 📌 About the Project
 
