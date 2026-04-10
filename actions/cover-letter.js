@@ -2,15 +2,15 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+import OpenAI from "openai";
 
 /**
  * Generate a new cover letter and save to DB
  */
 export async function generateCoverLetter(data) {
+  if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not set");
+
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   console.log("🔍 Starting cover letter generation for data:", data);
 
   const { userId } = await auth();
@@ -22,7 +22,7 @@ export async function generateCoverLetter(data) {
   });
   console.log(
     "👤 Found user:",
-    user ? { id: user.id, clerkUserId: user.clerkUserId } : null
+    user ? { id: user.id, clerkUserId: user.clerkUserId } : null,
   );
   if (!user) throw new Error("User not found");
 
@@ -56,15 +56,17 @@ export async function generateCoverLetter(data) {
 
   try {
     console.log("🤖 Sending prompt to AI...");
-    const result = await model.generateContent(prompt);
-    console.log("🤖 AI response received:", result ? "Success" : "No result");
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+    });
+    console.log("🤖 AI response received");
 
-    // Safely extract text
-    const content = result?.response?.text?.().trim();
+    const content = completion.choices[0].message.content?.trim();
     console.log("📝 Extracted content length:", content ? content.length : 0);
     console.log(
       "📝 Content preview:",
-      content ? content.substring(0, 100) + "..." : "No content"
+      content ? content.substring(0, 100) + "..." : "No content",
     );
 
     if (!content) throw new Error("AI returned no cover letter content");
@@ -84,9 +86,8 @@ export async function generateCoverLetter(data) {
     console.log("✅ Cover letter saved:", coverLetter.id);
     return coverLetter;
   } catch (error) {
-    console.error("❌ Error generating cover letter:", error);
-    console.error("❌ Error details:", error.message);
-    throw new Error("Failed to generate cover letter");
+    console.error("❌ Error generating cover letter:", error.message);
+    throw new Error(error.message || "Failed to generate cover letter");
   }
 }
 

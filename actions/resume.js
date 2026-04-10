@@ -2,11 +2,10 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function saveResume(content) {
   const { userId } = await auth();
@@ -60,20 +59,18 @@ export async function getResume() {
 export async function improveWithAI({ current, type }) {
   try {
     // Input validation
-    if (!current || typeof current !== 'string') {
+    if (!current || typeof current !== "string") {
       throw new Error("Invalid or missing 'current' parameter");
     }
-    if (!type || typeof type !== 'string') {
+    if (!type || typeof type !== "string") {
       throw new Error("Invalid or missing 'type' parameter");
     }
 
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // Check API key
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is not configured");
-      throw new Error("AI service not configured");
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     const user = await db.user.findUnique({
@@ -102,29 +99,26 @@ Requirements:
 
 Format the response as a single paragraph without any additional text or explanations.`;
 
-    const result = await model.generateContent(prompt);
-    
-    if (!result || !result.response) {
-      throw new Error("Invalid AI response");
-    }
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+    });
 
-    const response = result.response;
-    const improvedContent = response.text();
-    
-    if (!improvedContent || typeof improvedContent !== 'string') {
+    const improvedContent = completion.choices[0].message.content;
+
+    if (!improvedContent || typeof improvedContent !== "string") {
       throw new Error("AI returned empty or invalid content");
     }
 
     return improvedContent.trim();
-
   } catch (error) {
     console.error("Error improving content:", error);
-    
+
     // Log the full error for debugging
     console.error("Full error details:", {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
     });
 
     // Return appropriate error messages
@@ -136,8 +130,13 @@ Format the response as a single paragraph without any additional text or explana
       throw new Error("User profile not found");
     } else if (error.message.includes("AI service not configured")) {
       throw new Error("AI service temporarily unavailable");
-    } else if (error.message.includes("quota") || error.message.includes("rate limit")) {
-      throw new Error("AI service rate limit exceeded. Please try again later.");
+    } else if (
+      error.message.includes("quota") ||
+      error.message.includes("rate limit")
+    ) {
+      throw new Error(
+        "AI service rate limit exceeded. Please try again later.",
+      );
     } else {
       throw new Error("Failed to improve content. Please try again.");
     }

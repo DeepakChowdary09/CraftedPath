@@ -2,16 +2,14 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const generateAIInsights = async (industry) => {
   // Check API key first
-  if (!process.env.GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY is not set");
-    throw new Error("AI service configuration error: API key missing");
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not set");
   }
 
   const prompt = `Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
@@ -33,38 +31,31 @@ Growth rate should be a percentage.
 Include at least 5 skills and trends.`;
 
   try {
-    console.log("Calling Gemini AI for industry insights...");
-    console.log("Industry:", industry);
-    console.log("API Key present:", !!process.env.GEMINI_API_KEY);
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+    });
 
-    const result = await model.generateContent(prompt);
-    console.log("AI Response received successfully");
-
-    const text = result.response.text();
-    console.log("Raw AI response:", text);
-
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-    console.log("Cleaned response:", cleanedText);
-
-    const parsedData = JSON.parse(cleanedText);
-    console.log("Successfully parsed AI insights");
-
+    const text = completion.choices[0].message.content;
+    const parsedData = JSON.parse(text);
     return parsedData;
   } catch (error) {
     console.error("Error generating AI insights:", error);
     console.error("Error details:", {
       message: error.message,
       name: error.name,
-      stack: error.stack
+      stack: error.stack,
     });
 
     // Provide specific error messages based on error type
-    if (error.message.includes("fetch failed") || error.message.includes("network")) {
-      throw new Error("Network error: Cannot connect to AI service. Check your internet connection and firewall settings.");
-    } else if (error.message.includes("API_KEY")) {
-      throw new Error("AI service authentication error: Invalid API key");
-    } else if (error.message.includes("quota") || error.message.includes("limit")) {
-      throw new Error("AI service quota exceeded: Please try again later");
+    if (
+      error.message.includes("fetch failed") ||
+      error.message.includes("network")
+    ) {
+      throw new Error(
+        "Network error: Cannot connect to AI service. Check your internet connection and firewall settings.",
+      );
     } else {
       throw new Error(`AI service error: ${error.message}`);
     }
@@ -73,8 +64,8 @@ Include at least 5 skills and trends.`;
 
 export async function getIndustryInsights() {
   try {
-    if (!process.env.GEMINI_API_KEY)
-      throw new Error("GEMINI_API_KEY not defined");
+    if (!process.env.OPENAI_API_KEY)
+      throw new Error("OPENAI_API_KEY not defined");
 
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
