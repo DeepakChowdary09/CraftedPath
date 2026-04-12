@@ -119,7 +119,7 @@ export default function CoverLetterGenerator() {
                   type="number"
                   min={0}
                   placeholder="Enter years of experience"
-                  {...register("experience", { valueAsNumber: true })}
+                  {...register("experience")}
                 />
                 {errors.experience && (
                   <p className="text-sm text-red-500">
