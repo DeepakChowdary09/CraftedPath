@@ -30,13 +30,15 @@ export async function saveResumeVersion(data) {
 
 export async function setActiveResumeVersion(id) {
   return withAuth(async (user) => {
-    await db.resumeVersion.updateMany({
-      where: { userId: user.id },
-      data: { isActive: false },
-    });
-    const version = await db.resumeVersion.update({
-      where: { id, userId: user.id },
-      data: { isActive: true },
+    const version = await db.$transaction(async (tx) => {
+      await tx.resumeVersion.updateMany({
+        where: { userId: user.id },
+        data: { isActive: false },
+      });
+      return tx.resumeVersion.update({
+        where: { id, userId: user.id },
+        data: { isActive: true },
+      });
     });
     revalidatePath("/resume/versions");
     return version;

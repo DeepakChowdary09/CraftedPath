@@ -15,6 +15,7 @@ import {
   logAIRequest,
   logAIError,
 } from "./config";
+import { extractJSON, withRetry } from "./utils";
 
 const TIMEOUT_MS = 30000;
 
@@ -68,11 +69,7 @@ Rules: 5 roles in salaryRanges, growthRate is a number, 5 items each in topSkill
     });
 
     const text = result.response.text();
-    const cleaned = text
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
-    const parsed: IndustryInsightsData = JSON.parse(cleaned);
+    const parsed = extractJSON<IndustryInsightsData>(text);
 
     return { success: true, data: parsed, error: null };
   } catch (error) {
@@ -113,11 +110,7 @@ Rules: 5 roles, growthRate number, 5 items each arrays, demandLevel High/Medium/
       return { success: false, data: null, error: "Groq returned empty content" };
     }
 
-    const cleaned = content
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
-    const parsed: IndustryInsightsData = JSON.parse(cleaned);
+    const parsed = extractJSON<IndustryInsightsData>(content);
 
     return { success: true, data: parsed, error: null };
   } catch (error) {
@@ -137,11 +130,11 @@ Rules: 5 roles, growthRate number, 5 items each arrays, demandLevel High/Medium/
 export async function generateIndustryInsights(
   industry: string
 ): Promise<AIResult<IndustryInsightsData>> {
-  let result = await generateWithGemini(industry);
+  let result = await withRetry(() => generateWithGemini(industry));
 
   if (!result.success) {
     console.log("[AI Fallback] Switching from Gemini to Groq for industry insights");
-    result = await generateWithGroq(industry);
+    result = await withRetry(() => generateWithGroq(industry));
   }
 
   return result;

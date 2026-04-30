@@ -30,16 +30,17 @@ export async function createGoal(data) {
 
 export async function updateGoalProgress(id, progress) {
   return withAuth(async (user) => {
-    const goal = await db.goal.findUnique({ where: { id, userId: user.id } });
-    if (!goal) throw new Error("Goal not found");
-
-    const clamped = Math.min(Math.max(progress, 0), goal.target);
-    const updated = await db.goal.update({
-      where: { id, userId: user.id },
-      data: {
-        progress: clamped,
-        isCompleted: clamped >= goal.target,
-      },
+    const updated = await db.$transaction(async (tx) => {
+      const goal = await tx.goal.findUnique({ where: { id, userId: user.id } });
+      if (!goal) throw new Error("Goal not found");
+      const clamped = Math.min(Math.max(progress, 0), goal.target);
+      return tx.goal.update({
+        where: { id, userId: user.id },
+        data: {
+          progress: clamped,
+          isCompleted: clamped >= goal.target,
+        },
+      });
     });
     revalidatePath("/dashboard/goals");
     return updated;

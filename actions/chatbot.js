@@ -48,7 +48,11 @@ export async function detectIntent(message) {
 
 async function handleApplications() {
   const summary = await getJobStatusSummary();
-  if (!summary || summary.length === 0) {
+  const total = summary
+    ? Object.values(summary).reduce((acc, n) => acc + n, 0)
+    : 0;
+
+  if (!summary || total === 0) {
     return {
       text: "You haven't tracked any job applications yet.",
       bullets: ["Head to **Job Tracker** to start adding applications.", "Track status: Applied, Interview, Offer, Rejected."],
@@ -56,8 +60,9 @@ async function handleApplications() {
     };
   }
 
-  const total = summary.reduce((acc, s) => acc + s._count.status, 0);
-  const bullets = summary.map((s) => `${s.status}: ${s._count.status}`);
+  const bullets = Object.entries(summary)
+    .filter(([, count]) => count > 0)
+    .map(([status, count]) => `${status}: ${count}`);
 
   return {
     text: `You have **${total}** job applications tracked.`,

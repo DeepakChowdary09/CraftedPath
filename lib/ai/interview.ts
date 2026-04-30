@@ -11,6 +11,7 @@ import {
   logAIRequest,
   logAIError,
 } from "./config";
+import { extractJSON, withRetry } from "./utils";
 
 /**
  * Single quiz question structure
@@ -78,11 +79,7 @@ Return ONLY valid JSON, no extra text:
       return { success: false, data: null, error: "Groq returned empty content" };
     }
 
-    const cleaned = content
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
-    const parsed: QuizResponse = JSON.parse(cleaned);
+    const parsed = extractJSON<QuizResponse>(content);
 
     return { success: true, data: parsed.questions, error: null };
   } catch (error) {
@@ -110,7 +107,7 @@ export async function generateQuiz(
   industry: string,
   skills: string[]
 ): Promise<AIResult<QuizQuestion[]>> {
-  return generateQuizWithGroq(industry, skills);
+  return withRetry(() => generateQuizWithGroq(industry, skills));
 }
 
 async function generateImprovementTipWithGroq(
@@ -165,5 +162,5 @@ export async function generateImprovementTip(
   industry: string,
   wrongQuestions: string
 ): Promise<AIResult<string>> {
-  return generateImprovementTipWithGroq(industry, wrongQuestions);
+  return withRetry(() => generateImprovementTipWithGroq(industry, wrongQuestions));
 }
