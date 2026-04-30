@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node prisma/seed.js",
+    "seed:questions": "node prisma/seed-questions.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -16,7 +17,6 @@
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "^6.16.0",
-    "inngest": "^3.39.1",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.11",
@@ -32,6 +32,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "groq-sdk": "^1.1.2",
+    "inngest": "^3.39.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.503.0",
     "next": "^15.4.2",
