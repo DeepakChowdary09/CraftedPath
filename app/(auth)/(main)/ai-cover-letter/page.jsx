@@ -1,4 +1,5 @@
 import { getCoverLetters } from "@/actions/cover-letter";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -8,20 +9,21 @@ export default async function CoverLetterPage() {
   const coverLetters = await getCoverLetters();
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex flex-col space-y-2 mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-6xl font-bold gradient-title">
-            My Cover Letters
-          </h1>
-          <Link href="/ai-cover-letter/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create New
-            </Button>
-          </Link>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {coverLetters.length > 0 && (
+            <Badge variant="secondary">{coverLetters.length}</Badge>
+          )}
         </div>
+        <Link href="/ai-cover-letter/new">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Cover Letter
+          </Button>
+        </Link>
       </div>
+
       <CoverLetterList coverLetters={coverLetters} />
     </div>
   );

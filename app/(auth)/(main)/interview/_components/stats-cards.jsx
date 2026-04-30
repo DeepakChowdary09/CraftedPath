@@ -26,42 +26,38 @@ export default function StatsCards({ assessments }) {
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <Card>
+      <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-          <Trophy className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-muted-foreground">Average Score</CardTitle>
+          <Trophy className="h-4 w-4 text-yellow-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{getAverageScore()}%</div>
-          <p className="text-xs text-muted-foreground">
-            Across all assessments
-          </p>
+          <div className="text-3xl font-bold text-yellow-500">{getAverageScore()}%</div>
+          <p className="text-xs text-muted-foreground mt-1">Across all assessments</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Questions Practiced
-          </CardTitle>
-          <Brain className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-muted-foreground">Questions Practiced</CardTitle>
+          <Brain className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{getTotalQuestions()}</div>
-          <p className="text-xs text-muted-foreground">Total questions</p>
+          <div className="text-3xl font-bold text-blue-500">{getTotalQuestions()}</div>
+          <p className="text-xs text-muted-foreground mt-1">Total questions answered</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Latest Score</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium text-muted-foreground">Latest Score</CardTitle>
+          <Target className="h-4 w-4 text-purple-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
+          <div className="text-3xl font-bold text-purple-500">
             {getLatestAssessment()?.quizScore.toFixed(1) || 0}%
           </div>
-          <p className="text-xs text-muted-foreground">Most recent quiz</p>
+          <p className="text-xs text-muted-foreground mt-1">Most recent quiz</p>
         </CardContent>
       </Card>
     </div>

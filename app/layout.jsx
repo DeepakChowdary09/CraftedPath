@@ -3,10 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import Header from "../components/ui/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,19 +28,8 @@ export default function RootLayout({ children }) {
             enableSystem
             disableTransitionOnChange
           >
-            {/* header */}
-            <Header />
-            <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-800">
-              <h1 className="text-xl font-bold">CraftedPath</h1>
-            </div>
-            <main className="min-h-screen">{children}</main>
+              <main className="min-h-screen">{children}</main>
             <Toaster richColors position="top-center" />
-            {/* footer */}
-            <footer className="bg-muted/50 py-12">
-              <div className="container mx-auto px-4 text-center text-gray-200">
-                <p>Made with Love By Dev</p>
-              </div>
-            </footer>
           </ThemeProvider>
         </body>
       </html>

@@ -304,9 +304,10 @@ export default function ResumeBuilder({ initialContent }) {
   return (
     <div data-color-mode="light" className="space-y-4">
       <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-        <h1 className="font-bold gradient-title text-5xl md:text-6xl">
-          Resume Builder
-        </h1>
+        <div>
+          <h2 className="text-xl font-bold">Resume Builder</h2>
+          <p className="text-sm text-muted-foreground">Build, edit and export your resume</p>
+        </div>
         <div className="space-x-2">
           <Button
             variant="destructive"

@@ -35,12 +35,16 @@ export default function PerformanceChart({ assessments }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="gradient-title text-3xl md:text-4xl">
-          Performance Trend
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold">Performance Trend</CardTitle>
         <CardDescription>Your quiz scores over time</CardDescription>
       </CardHeader>
       <CardContent>
+        {chartData.length === 0 ? (
+          <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground">
+            <p className="font-medium text-sm">No quiz data yet</p>
+            <p className="text-xs mt-1">Complete a quiz to see your performance trend</p>
+          </div>
+        ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -66,12 +70,15 @@ export default function PerformanceChart({ assessments }) {
               <Line
                 type="monotone"
                 dataKey="score"
-                stroke="hsl(0 0% 60%)"
-                strokeWidth={2}
+                stroke="oklch(0.62 0.22 264)"
+                strokeWidth={2.5}
+                dot={{ fill: "oklch(0.62 0.22 264)", r: 3 }}
+                activeDot={{ r: 5, fill: "oklch(0.62 0.22 264)" }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
+        )}
       </CardContent>
     </Card>
   );

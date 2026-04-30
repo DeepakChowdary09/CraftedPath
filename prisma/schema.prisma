@@ -20,10 +20,16 @@ model User {
   bio              String?
   experience       Int?
   skills           String[]
-  assessments      Assessments[]
-  coverLetter      CoverLetter[]
-  resume           Resume?
-  industryInsights IndustryInsights? @relation(fields: [industry], references: [industry])
+  assessments         Assessments[]
+  coverLetter         CoverLetter[]
+  resume              Resume?
+  industryInsights    IndustryInsights?   @relation(fields: [industry], references: [industry])
+  jobApplications     JobApplication[]
+  resumeVersions      ResumeVersion[]
+  practicedQuestions  PracticedQuestion[]
+  notes               Note[]
+  bookmarks           Bookmark[]
+  goals               Goal[]
 }
 
 model Assessments {
@@ -80,6 +86,108 @@ model IndustryInsights {
   users             User[]
 
   @@index([industry])
+}
+
+model JobApplication {
+  id          String            @id @default(uuid())
+  userId      String
+  companyName String
+  position    String
+  status      ApplicationStatus @default(APPLIED)
+  jobUrl      String?
+  notes       String?
+  appliedAt   DateTime          @default(now())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum ApplicationStatus {
+  APPLIED
+  INTERVIEWING
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}
+
+model ResumeVersion {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  content   String
+  tag       String?
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Question {
+  id                 String              @id @default(uuid())
+  role               String
+  topic              String
+  difficulty         String
+  question           String
+  answer             String?
+  practicedQuestions PracticedQuestion[]
+
+  @@index([role])
+  @@index([topic])
+}
+
+model PracticedQuestion {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  jobTitle  String
+  company   String
+  jobUrl    String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Goal {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  target      Int
+  progress    Int      @default(0)
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum DemandLevel {

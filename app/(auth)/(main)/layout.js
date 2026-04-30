@@ -1,7 +1,19 @@
+import AppSidebar from "@/components/layout/app-sidebar";
+import AppTopbar from "@/components/layout/app-topbar";
+import CareerAssistant from "@/components/ui/CareerAssistant";
+
 const Mainlayout = ({ children }) => {
-  // Redirect to Onboarding if user is not onboarded
   return (
-    <div className='container mx-auto mt-24 mb-20'>{children}</div>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <AppSidebar />
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <AppTopbar />
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
+      <CareerAssistant />
+    </div>
   );
 };
 
