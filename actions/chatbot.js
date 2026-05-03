@@ -25,7 +25,7 @@ const INTENTS = [
     keywords: ["interview", "quiz", "practice", "assessment", "score", "prepare", "interview tips"],
   },
   {
-    name: "goal",
+    name: "goals",
     keywords: ["goal", "goals", "progress", "weekly goal", "target", "stats", "overview"],
   },
   {
