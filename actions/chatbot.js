@@ -5,7 +5,7 @@ import { getSkillGap } from "@/actions/skill-gap";
 import { getProgressStats } from "@/actions/progress";
 import { getAssessments } from "@/actions/interview";
 
-// ── Intent detection ──────────────────────────────────────────────────────────
+//  Intent detection ──────────────────────────────────────────────────────────
 
 const INTENTS = [
   {
