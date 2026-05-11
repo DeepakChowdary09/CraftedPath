@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, TrendingUp, FileText, GraduationCap } from "lucide-react";
 
 const STATS = [
-  { icon: FileText, label: "Resume Built", value: "12k+" },
+  { icon: FileText, label: "Resumes Built", value: "12k+" },
   { icon: GraduationCap, label: "Interviews Aced", value: "8k+" },
   { icon: TrendingUp, label: "Offers Received", value: "3k+" },
 ];
