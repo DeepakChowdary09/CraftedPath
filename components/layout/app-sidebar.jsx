@@ -33,7 +33,7 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Career Tool",
+    label: "Career Tools",
     items: [
       { href: "/resume", label: "Resume Builder", icon: FileText },
       { href: "/resume/versions", label: "Resume Versions", icon: Layers },
