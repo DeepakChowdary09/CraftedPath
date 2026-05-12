@@ -7,7 +7,7 @@ import { MessageCircle, X, Send, Bot, User, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const SUGGESTIONS = [
+const SUGGESTION = [
   "How are my job applications?",
   "What skills am I missing?",
   "Show my interview scores",
