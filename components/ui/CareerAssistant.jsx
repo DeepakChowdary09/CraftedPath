@@ -12,7 +12,7 @@ const SUGGESTIONS = [
   "What skills am I missing?",
   "Show my interview scores",
   "How are my goals?",
-  "What ca y h w?",
+  "What c y h w?",
 ];
 
 function TypingIndicator() {
