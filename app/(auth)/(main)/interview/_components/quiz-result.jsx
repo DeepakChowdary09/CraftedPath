@@ -1,19 +1,31 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Trophy, XCircle } from "lucide-react";
+import AgentAnalysis from "./agent-analysis";
 
 export default function QuizResult({
   result,
   hideStartNew = false,
   onStartNew,
 }) {
+  const questionResults = useMemo(() => {
+    if (!result?.questions) return [];
+    return result.questions.map((q) => ({
+      question: q.question,
+      correctAnswer: q.answer,
+      userAnswer: q.userAnswer,
+      explanation: q.explanation || "",
+    }));
+  }, [result?.questions]);
+
   if (!result) return null;
 
   return (
-    <div className="mx-auto">
+    <div className="mx-auto space-y-6">
       <h1 className="flex items-center gap-2 text-3xl gradient-title">
         <Trophy className="h-6 w-6 text-yellow-500" />
         Quiz Results
@@ -58,6 +70,11 @@ export default function QuizResult({
             </div>
           ))}
         </div>
+
+        {/* Agent Analysis Section */}
+        {questionResults.length > 0 && (
+          <AgentAnalysis questionResults={questionResults} />
+        )}
       </CardContent>
 
       {!hideStartNew && (

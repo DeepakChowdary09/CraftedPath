@@ -2,34 +2,33 @@
 
 import { db } from "@/lib/prisma";
 
-const GUEST_CLERK_ID = "guest_demo_user";
-const GUEST_EMAIL = "guest@craftedpath.demo";
-const GUEST_NAME = "Guest User";
-
 /**
- * Returns (or creates) the shared guest demo user record.
- * This is intentionally a read-heavy, low-privilege path — the
- * guest user is pre-onboarded with demo data so every feature is
- * immediately explorable without a real Clerk session.
+ * Pre-seeds the guest user with demo profile data after their first Clerk sign-in.
+ * Called once after guest login so the dashboard/features work immediately.
+ *
+ * @param {string} clerkUserId — the real Clerk user ID assigned to the guest account
  */
-export async function getOrCreateGuestUser() {
-  let guest = await db.user.findUnique({
-    where: { clerkUserId: GUEST_CLERK_ID },
+export async function seedGuestProfile(clerkUserId) {
+  if (!clerkUserId) return { success: false };
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId },
   });
 
-  if (!guest) {
-    guest = await db.user.create({
-      data: {
-        clerkUserId: GUEST_CLERK_ID,
-        email: GUEST_EMAIL,
-        name: GUEST_NAME,
-        industry: "Technology-software-development",
-        experience: 3,
-        bio: "Demo account — exploring CraftedPath features.",
-        skills: ["JavaScript", "React", "Node.js", "TypeScript", "Next.js"],
-      },
-    });
-  }
+  if (!user) return { success: false };
 
-  return { success: true, userId: guest.clerkUserId };
+  // Only seed if the user hasn't been onboarded yet (no industry set)
+  if (user.industry) return { success: true, alreadySeeded: true };
+
+  await db.user.update({
+    where: { clerkUserId },
+    data: {
+      industry: "Technology-software-development",
+      experience: 3,
+      bio: "Demo account — exploring CraftedPath features.",
+      skills: ["JavaScript", "React", "Node.js", "TypeScript", "Next.js"],
+    },
+  });
+
+  return { success: true };
 }

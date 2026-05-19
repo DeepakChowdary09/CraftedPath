@@ -6,10 +6,11 @@ import { UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { seedGuestProfile } from "@/actions/guest";
 
 /**
  * One-click guest access using a shared demo Clerk account.
- * Requires GUEST_EMAIL + GUEST_PASSWORD in environment variables.
+ * Requires NEXT_PUBLIC_GUEST_EMAIL + NEXT_PUBLIC_GUEST_PASSWORD in environment variables.
  */
 export default function GuestLoginButton() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -23,7 +24,7 @@ export default function GuestLoginButton() {
     const password = process.env.NEXT_PUBLIC_GUEST_PASSWORD;
 
     if (!email || !password) {
-      toast.error("Guest login is not configured.");
+      toast.error("Guest login is not configured. Add NEXT_PUBLIC_GUEST_EMAIL and NEXT_PUBLIC_GUEST_PASSWORD to .env.local");
       return;
     }
 
@@ -36,6 +37,17 @@ export default function GuestLoginButton() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+
+        // Pre-seed guest profile with demo data so dashboard works immediately
+        try {
+          const clerkUserId = result.createdUserId;
+          if (clerkUserId) {
+            await seedGuestProfile(clerkUserId);
+          }
+        } catch {
+          // Seeding is best-effort; checkUser + onboarding will handle it
+        }
+
         toast.success("Signed in as Guest!");
         router.push("/dashboard");
       } else {

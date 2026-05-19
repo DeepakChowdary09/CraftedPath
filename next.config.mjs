@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: true,
+  poweredByHeader: false,
+  turbopack: {
+    root: "F:\\vscode_stuff\\Personal_Projects\\craftedpath",
+  },
   images: {
     remotePatterns: [
       {

@@ -10,6 +10,7 @@ import {
   Briefcase,
   Target,
   ArrowRight,
+  Bot,
   BrainCircuit,
   Mail,
   Layers,
@@ -29,6 +30,7 @@ const STAT_CARDS = [
   { key: "applicationCount", label: "Applications", icon: Briefcase, color: "text-orange-500" },
   { key: "coverLetterCount", label: "Cover Letters", icon: Mail, color: "text-pink-500" },
   { key: "resumeVersionCount", label: "Resume Versions", icon: Layers, color: "text-cyan-500" },
+  { key: "agentRunsThisWeek", label: "Agent Runs (Week)", icon: Bot, color: "text-indigo-500" },
 ];
 
 export default function DashboardWelcome({ stats }) {
@@ -61,7 +63,7 @@ export default function DashboardWelcome({ stats }) {
       </div>
 
       {/* Activity stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {STAT_CARDS.map(({ key, label, icon: Icon, color }) => (
           <div key={key} className="rounded-xl border bg-card p-4 space-y-2">
             <div className="flex items-center justify-between">

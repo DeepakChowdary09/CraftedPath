@@ -14,6 +14,10 @@ import {
   Layers,
   BookOpen,
   CheckCircle2,
+  Sparkles,
+  Zap,
+  Search,
+  FileCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,6 +78,44 @@ const GrowthToolsDropdown = () => (
         <Link href="/job-tracker" className="flex items-center gap-2">
           <Briefcase className="h-4 w-4 mr-2" />
           <span>Job Tracker</span>
+        </Link>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+const AIAgentsDropdown = () => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="outline" className="border-purple-200 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:border-purple-800 dark:hover:bg-purple-900">
+        <Sparkles className="h-4 w-4 mr-2 text-purple-600" />
+        <span className="hidden md:block">AI Agents</span>
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent>
+      <DropdownMenuItem>
+        <Link href="/job-match" className="flex items-center gap-2">
+          <Target className="h-4 w-4 mr-2 text-purple-500" />
+          <span>Job Match</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem>
+        <Link href="/ats-review" className="flex items-center gap-2">
+          <FileCheck className="h-4 w-4 mr-2 text-green-500" />
+          <span>ATS Review</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem>
+        <Link href="/resume-optimizer" className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 mr-2 text-blue-500" />
+          <span>Resume Optimizer</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem>
+        <Link href="/workflow" className="flex items-center gap-2">
+          <Zap className="h-4 w-4 mr-2 text-yellow-500" />
+          <span>Full Workflow</span>
         </Link>
       </DropdownMenuItem>
     </DropdownMenuContent>
@@ -151,6 +193,7 @@ const Header = async () => {
           <SignedIn>
             <DashboardDropdown />
             <GrowthToolsDropdown />
+            <AIAgentsDropdown />
             <ThemeToggle />
             <UserButton
               appearance={{

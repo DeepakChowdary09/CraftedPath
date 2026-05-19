@@ -1,17 +1,9 @@
 /**
  * Interview AI Service
- * Provider: Groq (LLaMA 3) — no fallback
+ * Uses callAI() from lib/ai/client.ts — Gemini primary, Groq fallback
  */
 
-import Groq from "groq-sdk";
-import {
-  AIResult,
-  aiConfig,
-  validateGroqConfig,
-  logAIRequest,
-  logAIError,
-} from "./config";
-import { extractJSON, withRetry } from "./utils";
+import { callAI, generateJSON } from "./client";
 
 /**
  * Single quiz question structure
@@ -28,131 +20,45 @@ export interface QuizQuestion {
 }
 
 /**
- * Response structure from quiz generation
+ * Standardized result type
  */
-interface QuizResponse {
-  /** Array of quiz questions */
-  questions: QuizQuestion[];
-}
-
-const TIMEOUT_MS = 30000;
-
-function createGroqClient(): Groq {
-  validateGroqConfig();
-  return new Groq({ apiKey: aiConfig.groqApiKey });
-}
-
-async function generateQuizWithGroq(
-  industry: string,
-  skills: string[]
-): Promise<AIResult<QuizQuestion[]>> {
-  logAIRequest("Groq", "generateQuiz");
-
-  const safeSkills = Array.isArray(skills) ? skills : [];
-  const skillsNote = safeSkills.length
-    ? `, skills: ${safeSkills.slice(0, 5).join(", ")}`
-    : "";
-  const prompt = `Generate 5 multiple-choice technical interview questions for a ${industry} professional${skillsNote}.
-Return ONLY valid JSON, no extra text:
-{"questions":[{"question":"string","options":["a","b","c","d"],"correctAnswer":"string","explanation":"string"}]}`;
-
-  const client = createGroqClient();
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  try {
-    const completion = await client.chat.completions.create(
-      {
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.1-8b-instant",
-        max_tokens: 2048,
-        temperature: 0.7,
-      },
-      { signal: controller.signal }
-    );
-
-    clearTimeout(timeoutId);
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      return { success: false, data: null, error: "Groq returned empty content" };
-    }
-
-    const parsed = extractJSON<QuizResponse>(content);
-
-    return { success: true, data: parsed.questions, error: null };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    const err = error instanceof Error ? error : new Error(String(error));
-    logAIError("Groq", err, false);
-    return { success: false, data: null, error: err.message };
-  }
+export interface AIResult<T = string> {
+  success: boolean;
+  data: T | null;
+  error: string | null;
 }
 
 /**
  * Generate technical interview quiz questions
- * Uses Groq as primary provider, falls back to Gemini on failure
  * @param industry - User's industry (e.g., "Software Engineering")
  * @param skills - Array of user skills
  * @returns Promise<AIResult<QuizQuestion[]>> - 5 quiz questions or error
  * @throws Never throws - errors returned in result object
- * @example
- * const result = await generateQuiz("Software Engineering", ["React", "Node.js"]);
- * if (result.success) {
- *   console.log(result.data); // QuizQuestion[]
- * }
  */
 export async function generateQuiz(
   industry: string,
   skills: string[]
 ): Promise<AIResult<QuizQuestion[]>> {
-  return withRetry(() => generateQuizWithGroq(industry, skills));
-}
+  const safeSkills = Array.isArray(skills) ? skills : [];
+  const skillsNote = safeSkills.length
+    ? `, skills: ${safeSkills.slice(0, 5).join(", ")}`
+    : "";
 
-async function generateImprovementTipWithGroq(
-  industry: string,
-  wrongQuestions: string
-): Promise<AIResult<string>> {
-  logAIRequest("Groq", "generateImprovementTip");
-
-  const prompt = `A ${industry} professional got these wrong: ${wrongQuestions}. Give one concise 1-2 sentence improvement tip. Be encouraging.`;
-
-  const client = createGroqClient();
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const prompt = `Generate 5 multiple-choice technical interview questions for a ${industry} professional${skillsNote}.
+Return ONLY valid JSON, no extra text:
+{"questions":[{"question":"string","options":["a","b","c","d"],"correctAnswer":"string","explanation":"string"}]}`;
 
   try {
-    const completion = await client.chat.completions.create(
-      {
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.1-8b-instant",
-        max_tokens: 256,
-        temperature: 0.7,
-      },
-      { signal: controller.signal }
-    );
-
-    clearTimeout(timeoutId);
-
-    const content = completion.choices[0]?.message?.content?.trim();
-    if (!content) {
-      return { success: false, data: null, error: "Groq returned empty content" };
-    }
-
-    return { success: true, data: content, error: null };
+    const parsed = await generateJSON(prompt) as { questions: QuizQuestion[] };
+    return { success: true, data: parsed.questions, error: null };
   } catch (error) {
-    clearTimeout(timeoutId);
-    const err = error instanceof Error ? error : new Error(String(error));
-    logAIError("Groq", err, false);
-    return { success: false, data: null, error: err.message };
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false, data: null, error: msg };
   }
 }
 
 /**
  * Generate personalized improvement tip based on wrong answers
- * Uses Groq as primary provider, falls back to Gemini on failure
  * @param industry - User's industry
  * @param wrongQuestions - Formatted string of wrong questions and correct answers
  * @returns Promise<AIResult<string>> - Encouraging improvement tip or error
@@ -162,5 +68,13 @@ export async function generateImprovementTip(
   industry: string,
   wrongQuestions: string
 ): Promise<AIResult<string>> {
-  return withRetry(() => generateImprovementTipWithGroq(industry, wrongQuestions));
+  const prompt = `A ${industry} professional got these wrong: ${wrongQuestions}. Give one concise 1-2 sentence improvement tip. Be encouraging.`;
+
+  try {
+    const result = await callAI(prompt);
+    return { success: true, data: result.text.trim(), error: null };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false, data: null, error: msg };
+  }
 }

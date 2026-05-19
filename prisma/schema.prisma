@@ -30,6 +30,9 @@ model User {
   notes               Note[]
   bookmarks           Bookmark[]
   goals               Goal[]
+  agentRuns           AgentRun[]
+  weeklyPlans         WeeklyAgentPlan[]
+  pendingChanges      PendingChanges[]
 }
 
 model Assessments {
@@ -188,6 +191,72 @@ model Goal {
   user        User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+enum AgentRunStatus {
+  PENDING
+  PROCESSING
+  PENDING_REVIEW
+  COMPLETED
+  FAILED
+}
+
+model AgentRun {
+  id            String        @id @default(cuid())
+  userId        String
+  agentType     String
+  status        AgentRunStatus @default(PENDING)
+  inputSummary  String
+  outputSummary String
+  toolCallLog   Json
+  durationMs    Int?
+  metadata      Json?         // Additional agent-specific data
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id])
+
+  @@index([userId, agentType])
+  @@index([status])
+}
+
+model WeeklyAgentPlan {
+  id              String   @id @default(cuid())
+  userId          String
+  weekOf          DateTime
+  readinessScore  Int
+  skillFocus      Json
+  resumeTips      Json
+  interviewFocus  String
+  rawAgentOutput  String
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@unique([userId, weekOf])
+}
+
+model PendingChanges {
+  id           String   @id @default(cuid())
+  userId       String
+  changes      Json
+  metadata     Json
+  status       PendingChangeStatus @default(pending)
+  approvedBy   String?
+  approvedAt   DateTime?
+  rejectedAt   DateTime?
+  rejectReason String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+}
+
+enum PendingChangeStatus {
+  pending
+  approved
+  rejected
+  partially_approved
 }
 
 enum DemandLevel {

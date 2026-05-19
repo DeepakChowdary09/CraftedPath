@@ -6,7 +6,11 @@ import { useState } from "react";
 import {
   Bookmark,
   BookOpen,
+  Bot,
   Briefcase,
+  Search,
+  Wand2,
+  PenLine,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -54,6 +58,15 @@ const NAV_SECTIONS = [
       { href: "/dashboard/goals", label: "Weekly Goals", icon: Target },
       { href: "/dashboard/notes", label: "Notes", icon: StickyNote },
       { href: "/dashboard/bookmarks", label: "Saved Jobs", icon: Bookmark },
+    ],
+  },
+  {
+    label: "AI Agents",
+    items: [
+      { href: "/job-analyzer", label: "Job Analyzer", icon: Search },
+      { href: "/resume-tailor", label: "Resume Tailor", icon: Wand2 },
+      { href: "/cover-letter-agent", label: "Cover Letter AI", icon: PenLine },
+      { href: "/agent-history", label: "Agent History", icon: Bot },
     ],
   },
 ];

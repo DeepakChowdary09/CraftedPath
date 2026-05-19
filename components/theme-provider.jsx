@@ -1,33 +1,28 @@
 "use client";
 
-import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { createContext, useContext, useEffect, useState } from "react";
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
+import { createContext, useContext } from "react";
 
-const ThemeContext = createContext();
+const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children, ...props }) {
-  const [theme, setTheme] = useState("light");
+  return (
+    <NextThemesProvider {...props}>
+      <ThemeContextBridge>{children}</ThemeContextBridge>
+    </NextThemesProvider>
+  );
+}
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme) {
-      setTheme(storedTheme);
-      document.documentElement.classList.toggle("dark", storedTheme === "dark");
-    }
-  }, []);
+function ThemeContextBridge({ children }) {
+  const { theme, setTheme } = useNextTheme();
 
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <NextThemesProvider {...props} value={{ theme, toggleTheme }}>
-        {children}
-      </NextThemesProvider>
+      {children}
     </ThemeContext.Provider>
   );
 }

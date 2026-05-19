@@ -5,6 +5,9 @@ import { db } from "@/lib/prisma";
 
 export async function getProgressStats() {
   return withAuth(async (user) => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
     const [
       resumeVersionCount,
       assessmentCount,
@@ -12,6 +15,7 @@ export async function getProgressStats() {
       coverLetterCount,
       goalCount,
       completedGoalCount,
+      agentRunsThisWeek,
     ] = await Promise.all([
       db.resumeVersion.count({ where: { userId: user.id } }),
       db.assessments.count({ where: { userId: user.id } }),
@@ -19,6 +23,7 @@ export async function getProgressStats() {
       db.coverLetter.count({ where: { userId: user.id } }),
       db.goal.count({ where: { userId: user.id } }),
       db.goal.count({ where: { userId: user.id, isCompleted: true } }),
+      db.agentRun.count({ where: { userId: user.id, createdAt: { gte: oneWeekAgo } } }),
     ]);
 
     const applicationsByStatus = await db.jobApplication.groupBy({
@@ -41,6 +46,7 @@ export async function getProgressStats() {
       coverLetterCount,
       goalCount,
       completedGoalCount,
+      agentRunsThisWeek,
       applicationsByStatus,
       recentAssessments,
     };
