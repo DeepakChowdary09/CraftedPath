@@ -3,13 +3,13 @@
  * Scores resume for ATS compatibility and provides optimization suggestions
  */
 
-import { callAI } from "@/lib/ai/client";
+import { callAIWithAgent } from "@/lib/ai/client";
 import { 
   ATSScoreResultSchema, 
   type ATSScoreResult,
   type KeywordMatch 
 } from "@/lib/schemas/agent-schemas";
-import { buildATSPrompt, ATS_SYSTEM_PROMPT } from "@/lib/prompts/ats/analyze";
+import { buildATSPrompt } from "@/lib/prompts/ats/analyze";
 import { initializeMemory, addAnalysisToMemory, getMemory } from "@/lib/memory/shared-memory";
 import { agentLogger, emitAgentEvent } from "@/lib/observability/logger";
 
@@ -80,8 +80,7 @@ export async function runATSAgent(input: ATSInput): Promise<ATSOutput> {
 
     agentLogger.info("ats", userId, "Calling AI for ATS analysis", undefined, workflowId);
 
-    const rawResult = await callAI(prompt, {
-      systemPrompt: ATS_SYSTEM_PROMPT,
+    const rawResult = await callAIWithAgent("ats", prompt, {
       json: true,
     });
 

@@ -3,7 +3,7 @@
  * Proposes and applies resume optimizations with human approval
  */
 
-import { callAI } from "@/lib/ai/client";
+import { callAIWithAgent } from "@/lib/ai/client";
 import { 
   ResumeOptimizationResultSchema, 
   type ResumeOptimizationResult,
@@ -11,7 +11,7 @@ import {
   type ATSScoreResult,
   type JobMatchResult,
 } from "@/lib/schemas/agent-schemas";
-import { buildResumeOptimizationPrompt, RESUME_SYSTEM_PROMPT } from "@/lib/prompts/resume/optimize";
+import { buildResumeOptimizationPrompt } from "@/lib/prompts/resume/optimize";
 import { initializeMemory, getMemory, addAnalysisToMemory } from "@/lib/memory/shared-memory";
 import { agentLogger, emitAgentEvent } from "@/lib/observability/logger";
 import { runResumeGuardrails, filterApprovedChanges, formatGuardrailReport } from "@/lib/guardrails/resume-guardrails";
@@ -109,8 +109,7 @@ export async function runResumeAgent(input: ResumeAgentInput): Promise<ResumeAge
 
     agentLogger.info("resume", userId, "Calling AI for resume optimization", undefined, workflowId);
 
-    const rawResult = await callAI(prompt, {
-      systemPrompt: RESUME_SYSTEM_PROMPT,
+    const rawResult = await callAIWithAgent("resume", prompt, {
       json: true,
     });
 

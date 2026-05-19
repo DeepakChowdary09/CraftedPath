@@ -339,9 +339,52 @@ const AGENT_SYSTEM_PROMPTS: AgentSystemPrompts = {
 Output valid JSON with: matchScore (0-100), breakdown (skillsMatch, experienceMatch, educationMatch, roleFit all 0-100), skillGaps (array with skill, importance [critical|high|medium|low], userHas [boolean], recommendation), strengths (array), quickWins (array), recommendedActions (array with action, priority [high|medium|low], estimatedImpact [string]), confidenceScore (0-1).
 Be objective and data-driven.`,
 
-  "ats": `You are an ATS Optimization Agent. Score resumes for ATS compatibility.
-Output valid JSON with: overallScore (0-100), sectionScores (contactInfo, summary, experience, education, skills all 0-100), keywordAnalysis (array of keyword, found [boolean], count, importance), issues (array of severity [critical|warning|info], section, description, suggestion), optimizationTips (array).
-Focus on keyword matching and formatting.`,
+  "ats": `You are an ATS Optimization Agent. Score resumes for automated screening systems.
+Return a single JSON object that matches this shape exactly:
+{
+  "overallScore": number (0-100),
+  "sectionScores": {
+    "contactInfo": number,
+    "summary": number,
+    "experience": number,
+    "skills": number,
+    "education": number,
+    "formatting": number
+  },
+  "keywordAnalysis": {
+    "totalKeywords": number,
+    "matchedKeywords": number,
+    "missingKeywords": string[],
+    "keywordMatches": [
+      {
+        "keyword": string,
+        "found": boolean,
+        "occurrences": number,
+        "context"?: string,
+        "suggestion"?: string
+      }
+    ]
+  },
+  "issues": [
+    {
+      "severity": "critical" | "warning" | "info",
+      "section": string,
+      "message": string,
+      "suggestion": string
+    }
+  ],
+  "optimizationTips": [
+    {
+      "priority": "high" | "medium" | "low",
+      "section": string,
+      "current": string,
+      "suggested": string,
+      "reason": string
+    }
+  ],
+  "recruiterReadiness": "ready" | "needs_work" | "major_revisions"
+}
+Only emit JSON that satisfies this schema. Use precise text for all required string fields, and provide arrays with at least three actionable issues and tips.`,
 
   "resume": `You are a Resume Optimization Agent. Propose changes to improve resume.
 Output valid JSON with: proposedChanges (array of section, originalText, proposedText, reason, confidence 0-1), guardrailReport (passed [boolean], issues [array]), requiresApproval [boolean], estimatedImpact [string].
@@ -401,22 +444,71 @@ export interface ToolResult {
 
 export type ToolHandler = (args: any) => Promise<ToolResult>;
 
+type ToolDefinition = { name: string; description: string; parameters: any };
+type AgentAudit = { userId: string; inputSummary: string; runId?: string; agentType?: string };
+
+export async function runAgentWithTools(
+  prompt: string,
+  tools: ToolDefinition[],
+  toolHandlers: Record<string, ToolHandler>,
+  systemInstruction?: string,
+  audit?: AgentAudit
+): Promise<{ text: string; toolLog: ToolCall[] }>;
+
 export async function runAgentWithTools(
   agentType: AgentType,
   prompt: string,
-  tools: Array<{ name: string; description: string; parameters: any }>,
+  tools: ToolDefinition[],
   toolHandlers: Record<string, ToolHandler>,
-  options: CallAIOptions = {},
-  audit?: { userId: string; inputSummary: string; runId?: string }
-): Promise<{ text: string; toolLog: ToolCall[] }> {
+  options?: CallAIOptions,
+  audit?: AgentAudit
+): Promise<{ text: string; toolLog: ToolCall[] }>;
+
+export async function runAgentWithTools(...args: unknown[]): Promise<{ text: string; toolLog: ToolCall[] }> {
+  let agentType: AgentType | null = null;
+  let prompt: string;
+  let tools: ToolDefinition[];
+  let toolHandlers: Record<string, ToolHandler>;
+  let options: CallAIOptions = {};
+  let audit: AgentAudit | undefined;
+
+  if (Array.isArray(args[1])) {
+    // Legacy signature: (prompt, tools, handlers, systemInstruction?, audit?)
+    prompt = args[0] as string;
+    tools = args[1] as ToolDefinition[];
+    toolHandlers = args[2] as Record<string, ToolHandler>;
+
+    const systemInstruction = typeof args[3] === "string" ? args[3] : undefined;
+    audit = (args[4] as AgentAudit) ?? undefined;
+
+    if (systemInstruction) {
+      options.systemPrompt = systemInstruction;
+    }
+
+    const auditAgentType = audit?.agentType;
+    if (typeof auditAgentType === "string") {
+      const normalized = auditAgentType.toLowerCase().replace(/_/g, "-");
+      if (["job-match", "ats", "resume", "interview", "coach", "cover-letter"].includes(normalized)) {
+        agentType = normalized as AgentType;
+      }
+    }
+  } else {
+    // Modern signature: (agentType, prompt, tools, handlers, options?, audit?)
+    agentType = args[0] as AgentType;
+    prompt = args[1] as string;
+    tools = args[2] as ToolDefinition[];
+    toolHandlers = args[3] as Record<string, ToolHandler>;
+    options = (args[4] as CallAIOptions) ?? {};
+    audit = (args[5] as AgentAudit) ?? undefined;
+  }
+
   const toolLog: ToolCall[] = [];
   const startTime = Date.now();
-  
-  // Build tool-enabled prompt
-  const toolDescriptions = tools.map(t => 
-    `- ${t.name}: ${t.description}\n  Parameters: ${JSON.stringify(t.parameters)}`
-  ).join("\n\n");
-  
+
+  const toolDescriptions = tools
+    .map(t => `- ${t.name}: ${t.description}\n  Parameters: ${JSON.stringify(t.parameters)}`)
+    .join("\n\n");
+
   const enhancedPrompt = `${prompt}
 
 ## AVAILABLE TOOLS
@@ -427,61 +519,76 @@ If you need to use a tool, respond with a JSON object in this exact format:
 {"tool_call": {"name": "tool_name", "arguments": {...}}}
 
 If you don't need any tools, respond normally.`;
-  
-  // Call AI
-  const result = await callAIWithAgent(agentType, enhancedPrompt, options);
-  
-  // Check for tool calls in response
+
+  const resolvedOptions: CallAIOptions = { ...options };
+
+  if (agentType) {
+    try {
+      const { AgentRegistry } = await import("@/lib/agents/registry");
+      const config = AgentRegistry[agentType];
+      if (config) {
+        if (!resolvedOptions.provider) {
+          resolvedOptions.provider = config.model as "groq" | "claude";
+        }
+        if (!resolvedOptions.modelName) {
+          resolvedOptions.modelName = config.modelName;
+        }
+        if (!resolvedOptions.systemPrompt) {
+          resolvedOptions.systemPrompt = config.systemPrompt;
+        }
+      }
+    } catch {
+      // Agent registry not available — continue with provided options
+    }
+  }
+
+  let result = await callAI(enhancedPrompt, resolvedOptions);
+  let finalText = result.text;
+
   const toolCallMatch = result.text.match(/\{["']tool_call["']:\s*\{["']name["']:\s*["']([^"']+)["'],\s*["']arguments["']:\s*(\{[^}]*\})\}\}/);
-  
+
   if (toolCallMatch) {
     const toolName = toolCallMatch[1];
     const toolArgs = JSON.parse(toolCallMatch[2]);
-    
+
     if (toolHandlers[toolName]) {
       toolLog.push({ name: toolName, args: toolArgs });
-      
+
       try {
         const toolResult = await toolHandlers[toolName](toolArgs);
-        
-        // Follow-up prompt with tool result
         const followUpPrompt = `${enhancedPrompt}\n\n## TOOL RESULT\nTool: ${toolName}\nResult: ${JSON.stringify(toolResult)}\n\nContinue with your response.`;
-        
-        const followUp = await callAIWithAgent(agentType, followUpPrompt, options);
-        
-        return { text: followUp.text, toolLog };
+
+        result = await callAI(followUpPrompt, resolvedOptions);
+        finalText = result.text;
       } catch (error: any) {
         console.error(`[Tool Error] ${toolName}:`, error.message);
-        return { text: result.text, toolLog };
       }
     }
   }
-  
-  // Log the run if audit info provided
+
   if (audit?.userId) {
     const durationMs = Date.now() - startTime;
-    
+    const loggedAgentType = agentType ?? audit.agentType ?? "custom";
+
     if (audit.runId) {
-      // Update existing run
       await AgentService.updateRun(audit.runId, {
         toolCallLog: toolLog,
         durationMs,
       });
     } else {
-      // Create new run
       await AgentService.logRun({
         userId: audit.userId,
-        agentType,
+        agentType: loggedAgentType,
         status: "COMPLETED",
         inputSummary: audit.inputSummary,
-        outputSummary: result.text.slice(0, 300),
+        outputSummary: finalText.slice(0, 300),
         toolCallLog: toolLog,
         durationMs,
       });
     }
   }
-  
-  return { text: result.text, toolLog };
+
+  return { text: finalText, toolLog };
 }
 
 // ============================================================================

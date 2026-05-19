@@ -3,13 +3,13 @@
  * Analyzes resume against job description to calculate match score and identify gaps
  */
 
-import { callAI } from "@/lib/ai/client";
+import { callAIWithAgent } from "@/lib/ai/client";
 import { 
   JobMatchResultSchema, 
   type JobMatchResult,
   type SkillGap 
 } from "@/lib/schemas/agent-schemas";
-import { buildJobMatchPrompt, JOB_MATCH_SYSTEM_PROMPT } from "@/lib/prompts/job-match/analyze";
+import { buildJobMatchPrompt } from "@/lib/prompts/job-match/analyze";
 import { initializeMemory, addAnalysisToMemory } from "@/lib/memory/shared-memory";
 import { agentLogger, emitAgentEvent } from "@/lib/observability/logger";
 import { db as prisma } from "@/lib/prisma";
@@ -83,8 +83,7 @@ export async function runJobMatchAgent(input: JobMatchInput): Promise<JobMatchOu
     agentLogger.info("job-match", userId, "Calling AI for analysis", undefined, workflowId);
 
     // Call AI with structured output
-    const rawResult = await callAI(prompt, {
-      systemPrompt: JOB_MATCH_SYSTEM_PROMPT,
+    const rawResult = await callAIWithAgent("job-match", prompt, {
       json: true,
     });
 

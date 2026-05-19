@@ -93,7 +93,6 @@ export async function loadUserContext(userId: string): Promise<UserContext> {
       resumeVersions: { orderBy: { createdAt: "desc" }, take: 5 },
       jobApplications: { orderBy: { createdAt: "desc" }, take: 10 },
       assessments: { orderBy: { createdAt: "desc" }, take: 5 },
-      agentRuns: { orderBy: { createdAt: "desc" }, take: 10 },
     },
   });
 
@@ -119,10 +118,10 @@ export async function loadUserContext(userId: string): Promise<UserContext> {
     }
   });
 
-  // Get previous ATS scores from resume versions
-  const previousATSScores = user.resumeVersions
-    .map(rv => rv.atsScore)
-    .filter((score): score is number => score !== null);
+  // Resume model has atsScore (one-per-user); ResumeVersion does not.
+  const previousATSScores: number[] = user.resume?.atsScore != null
+    ? [user.resume.atsScore]
+    : [];
 
   return {
     userId: user.id,
@@ -137,7 +136,7 @@ export async function loadUserContext(userId: string): Promise<UserContext> {
     resumeVersions: user.resumeVersions.map(rv => ({
       id: rv.id,
       title: rv.title,
-      atsScore: rv.atsScore,
+      atsScore: null,
       createdAt: rv.createdAt,
       isActive: rv.isActive,
     })),
@@ -145,7 +144,7 @@ export async function loadUserContext(userId: string): Promise<UserContext> {
       id: ja.id,
       companyName: ja.companyName,
       position: ja.position,
-      status: ja.status,
+      status: String(ja.status),
       appliedAt: ja.appliedAt,
     })),
   };

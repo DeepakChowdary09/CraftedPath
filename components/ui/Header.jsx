@@ -1,4 +1,3 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import {
   Bookmark,
   Briefcase,
@@ -18,11 +17,13 @@ import {
   Zap,
   Search,
   FileCheck,
+  UserCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./button";
 import { ThemeToggle } from "./theme-toggle";
+import { GuestLogoutButton } from "./guest-logout-button";
 
 import {
   DropdownMenu,
@@ -31,8 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { checkUser } from "@/lib/checkUser";
-import GuestLoginButton from "./guest-login-button";
+import { getGuestSession } from "@/lib/auth/guest-session";
 
 const GrowthToolsDropdown = () => (
   <DropdownMenu>
@@ -172,7 +172,7 @@ const DashboardDropdown = () => (
   </DropdownMenu>
 );
 const Header = async () => {
-  await checkUser();
+  const session = getGuestSession();
   return (
     <header className="fixed top-0 w-full border-b border-border/40 bg-background/75 backdrop-blur-xl z-50">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -190,32 +190,21 @@ const Header = async () => {
 
         {/* Right Side */}
         <div className="flex items-center gap-3">
-          <SignedIn>
-            <DashboardDropdown />
-            <GrowthToolsDropdown />
-            <AIAgentsDropdown />
-            <ThemeToggle />
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                  userButtonPopoverCard: "shadow-2xl border border-border/60",
-                  userPreviewMainIdentifier: "font-semibold",
-                },
-              }}
-              afterSignOutUrl="/"
-            />
-          </SignedIn>
-
-          <SignedOut>
-            <ThemeToggle />
-            <SignInButton mode="modal">
-              <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/50">
-                Sign In
-              </Button>
-            </SignInButton>
-            <GuestLoginButton />
-          </SignedOut>
+          <DashboardDropdown />
+          <GrowthToolsDropdown />
+          <AIAgentsDropdown />
+          <ThemeToggle />
+          {session ? (
+            <div className="flex items-center gap-3 rounded-full border border-border/60 bg-background px-3 py-1 text-sm text-muted-foreground">
+              <UserCircle className="h-4 w-4" />
+              <span>{session.email}</span>
+              <GuestLogoutButton />
+            </div>
+          ) : (
+            <Button asChild variant="outline" size="sm" className="border-border/60 hover:bg-accent/50">
+              <Link href="/guest">Guest Login</Link>
+            </Button>
+          )}
         </div>
       </nav>
     </header>
