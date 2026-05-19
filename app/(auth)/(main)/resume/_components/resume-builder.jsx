@@ -59,17 +59,15 @@ const generatePDFAlternative = () => {
     </head>
     <body>
       ${convertMarkdownToHTML(previewContent)}
-      <script>
-        window.onload = function() {
-          window.print();
-          setTimeout(() => window.close(), 1000);
-        }
-      </script>
     </body>
     </html>
   `;
   printWindow.document.write(htmlContent);
   printWindow.document.close();
+  printWindow.onload = function () {
+    printWindow.print();
+    setTimeout(() => printWindow.close(), 1000);
+  };
 };
 
 export default function ResumeBuilder({ initialContent }) {
