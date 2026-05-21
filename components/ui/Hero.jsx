@@ -15,7 +15,7 @@ const Hero = () => {
 
   return (
     <section className="relative w-full pt-36 md:pt-48 pb-16 overflow-hidden">
-      {/* Animated blob backgrou */}
+      {/* Animated blob background */}
       <div className="absolute inset-0 -z-10 hero-gradient-bg" aria-hidden="true" />
       <div
         className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20 blur-3xl -z-10"
