@@ -106,7 +106,7 @@ export default function CareerAssistant() {
     {
       id: 0,
       role: "bot",
-      text: "Hi! I'm your **Career Assistant**. Ask me about your resume, applications, skills, interview , or goals .",
+      text: "Hi! I'm your **Career Assistant**. Ask me about your resume, applications, skills, interview prep , or goals .",
       bullets: [],
       link: null,
     },
