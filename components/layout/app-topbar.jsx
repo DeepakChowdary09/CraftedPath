@@ -13,7 +13,7 @@ const ROUTE_MAP = {
   "/dashboard/goals": { label: "Weekly Goals", group: "Personal" },
   "/dashboard/notes": { label: "Notes & Journal", group: "Personal" },
   "/dashboard/bookmarks": { label: "Saved Jobs", group: "Personal" },
-  "/resume": { label: "Resume Builder", group: "Career " },
+  "/resume": { label: "Resume Builder", group: "Career Tools" },
   "/resume/versions": { label: "Resume Versions", group: "Career Tools" },
   "/ai-cover-letter": { label: "Cover Letter", group: "Career Tools" },
   "/interview": { label: "Interview Prep", group: "Interview" },
