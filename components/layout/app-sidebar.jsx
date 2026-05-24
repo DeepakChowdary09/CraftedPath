@@ -41,7 +41,7 @@ const NAV_SECTIONS = [
     items: [
       { href: "/resume", label: "Resume Builder", icon: FileText },
       { href: "/resume/versions", label: "Resume Versions", icon: Layers },
-      { href: "/ai-cover-letter", label: "Cover Letter", icon: PenBox },
+      { href: "/ai-cover-letter", label: "Cover ", icon: PenBox },
       { href: "/job-tracker", label: "Job Tracker", icon: Briefcase },
     ],
   },
