@@ -47,7 +47,7 @@ const GrowthToolsDropdown = () => (
       <DropdownMenuItem>
         <Link href="/resume" className="flex items-center gap-2">
           <FileText className="h-4 w-4 mr-2" />
-          <span>Build Resum</span>
+          <span>Build Resu</span>
         </Link>
       </DropdownMenuItem>
       <DropdownMenuItem>
