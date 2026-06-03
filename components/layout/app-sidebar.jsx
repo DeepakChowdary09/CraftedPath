@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 
 const NAV_SECTIONS = [
   {
-    label: "Over",
+    label: "Overview",
     items: [
       { href: "/dashboard", label: "Industry Insights", icon: LayoutDashboard },
       { href: "/dashboard/skills", label: "Skill Gap", icon: CheckCircle2 },
