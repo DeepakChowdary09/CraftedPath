@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
   "How are my job applications?",
-  "What skills am I missing?",
+  "What skills am I ?",
   "Show my interview scores",
   "How are my goals?",
   "How can i help?",
