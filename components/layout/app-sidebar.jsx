@@ -31,7 +31,7 @@ const NAV_SECTIONS = [
   {
     label: "Overview",
     items: [
-      { href: "/dashboard", label: "Industry Insights", icon: LayoutDashboard },
+      { href: "/dashboard", label: "Industry ", icon: LayoutDashboard },
       { href: "/dashboard/skills", label: "Skill Gap", icon: CheckCircle2 },
       { href: "/dashboard/progress", label: "Progress", icon: LineChart },
     ],
