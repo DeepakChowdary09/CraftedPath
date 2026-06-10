@@ -10,7 +10,7 @@ import { getAssessments } from "@/actions/interview";
 const INTENTS = [
   {
     name: "applications",
-    keywords: ["application", "applications", "applied", "job status", "tracker", "jobs applied", "how many jobs"],
+    keywords: ["application", "applications", "applied", "job status", "tracker", "jobs applied", "how  jobs"],
   },
   {
     name: "skills",
