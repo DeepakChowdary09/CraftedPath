@@ -24,7 +24,7 @@ export async function addBookmark(data) {
       },
     });
     revalidatePath("/dashboard/bookmarks");
-    return bookmark;
+    return ;
   });
 }
 
