@@ -6,7 +6,7 @@ import { runATSAgent, generateATSSummary } from "@/lib/agents/ats-agent";
 import { db as prisma } from "@/lib/prisma";
 
 /**
- * Server Action: Run ATS review
+ * Server Action:  ATS review
  */
 export async function analyzeATS(formData) {
   try {
