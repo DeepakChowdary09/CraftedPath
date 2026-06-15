@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, TrendingUp, FileText, GraduationCap } from "lucid
 const STATS = [
   { icon: FileText, label: " Resumes Built", value: "12k+" },
   { icon: GraduationCap, label: "Interviews Aced", value: "8k+" },
-  { icon: TrendingUp, label: "Offers Received", value: "3k+" },
+  { icon: TrendingUp, label: "Offers ", value: "3k+" },
 ];
 
 const Hero = () => {
