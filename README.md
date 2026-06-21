@@ -1,6 +1,6 @@
  CraftedPath | Your AI-Powered Career Companion
 
-📌 About the Project
+📌 About the 
 
 CraftedPath is an AI-assisted job application and preparation platform that keeps you ahead in the hiring game. It’s more than just a tracker — it helps you apply smarter, prepare better, and land faster.
 
